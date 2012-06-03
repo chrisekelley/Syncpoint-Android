@@ -4,7 +4,7 @@ This is a very preliminary implementation of a Syncpoint Client for Android.  It
 
 ## Known Issues
 - Slow.  I believe it is the underlying TouchDB that is holding everything back.
-- Temporary paring users are not deleted.
+- Temporary pairing users are not deleted.
 - Does not work correctly when Syncpoint Server is not available.
 - Does not yet support the single channel mode that iOS offers.
 
