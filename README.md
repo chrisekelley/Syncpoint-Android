@@ -10,6 +10,6 @@ This is a very preliminary implementation of a Syncpoint Client for Android.  It
 
 ## Building/Using Syncpoint
 
-See the Syncpoint-Android-TestApp for an example of how to use the Syncpoint Client.
+See the <a href="https://github.com/couchbaselabs/Syncpoint-Android-TestApp">Syncpoint-Android-TestApp</a> for an example of how to use the Syncpoint Client.
 
-Currently you need this repository, as well as the TouchDB-Android and TouchDB-Android-Ektorp repositories available in your Eclipse workspace.
+Currently you need this repository, as well as the <a href="https://github.com/couchbaselabs/TouchDB-Android">TouchDB-Android</a> projects available in your Eclipse workspace.
