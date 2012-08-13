@@ -325,8 +325,12 @@ public class SyncpointClientImpl implements SyncpointClient {
                 subscription.makeInstallation(applicationContext, null);  // TODO: Report error
             }
         }
+        checkChannelReadiness();
+    }
 
-        //again this part of the implementation differs because we just
+	public boolean checkChannelReadiness() {
+		boolean ready = false;
+		//again this part of the implementation differs because we just
         //have channel ids and need to load the channels
         Map<String, SyncpointChannel> channelMap = new HashMap<String, SyncpointChannel>();
         List<SyncpointChannel> channels = (List<SyncpointChannel>)SyncpointModelFactory.getModelsOfType(localControlDatabase, "channel", SyncpointChannel.class);
@@ -334,7 +338,6 @@ public class SyncpointClientImpl implements SyncpointClient {
             channel.attach(localServer, localControlDatabase);
             channelMap.put(channel.getId(), channel);
         }
-
 
         // Sync all installations whose channels are ready:
         List<SyncpointInstallation> allInstallations = session.getAllInstallations();
@@ -345,14 +348,40 @@ public class SyncpointClientImpl implements SyncpointClient {
                 Log.e(TAG, String.format("Installation %s references missing channel %s", installation, channel));
             } else if(channel.isReady()) {
                 Log.v(TAG, String.format("Channel %s is ready, calling sync", channel.getName()));
+                ready = true;
                 installation.sync(session, channel);
             } else {
                 Log.v(TAG, String.format("Channel %s is not ready", channel.getName()));
+                waitForChannelToBeReady();
             }
-
         }
-    }
-
+        return ready;
+	}
+    
+	/**
+	 * Sometimes the Channel is not ready to sync, so you need to keep checking; otherwise, the initial sync won't ever happen.
+	 */
+	void waitForChannelToBeReady() {
+		Log.v(TAG, "Waiting for channel to be ready.");
+		Looper l = Looper.getMainLooper();
+		Handler h = new Handler(l);
+		h.postDelayed(new Runnable() {
+			
+			@Override
+			public void run() {
+				Log.v(TAG, "Is channel is ready?");
+				boolean ready = checkChannelReadiness();
+				if (!ready) {
+					ReplicationCommand controlPull = pullControlData(session.getControlDatabase(), false);
+			        localServer.replicate(controlPull);
+			        observeControlDatabase();
+				} else {
+					Log.v(TAG, "The channel is ready. Go! ");
+				}
+			}
+		}, 5000);
+	}
+	
     void mergeExistingChannels() {
         Log.v(TAG, "mergeExistingChannels");
         List<SyncpointChannel> pairedChannels = session.getMyChannels();
